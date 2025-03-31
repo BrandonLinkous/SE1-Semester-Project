@@ -1,26 +1,29 @@
-Sprint Goals
+Sprint Goals:
 Sprint 1:
-Goal: Ensure we have a shared understanding of our game concept, get a title running in a frame of a browser, and set up version control.
-•	Brainstorm and decide on game (High Priority)
-•	Set up version control and project repo (High Priority)
-•	Get the title running in a frame in a browser (Medium Priority)
+Goal: By the end of Sprint 1, the team will:
+•	Replace the placeholder player and enemy ship blocks with themed pirate ship sprites including player ship as bucky.
+•	Implement enemy ships’ ability to shoot cannonballs toward the player
+•	Tracking a player score by awarding points when an enemy ship is destroyed and display the score on the game screen.
+•	Adjust collision to only hit based on the sprite.
+•	Fix zooming bug when playing. 
+
 Sprint 2:
-Goal: Develop the core gameplay that defines how the player engages with the game, such as input, feedback, and challenges.
-•	Establish basic enemy or obstacle behavior
-•	Initial win/lose conditions
-•	Add any art or placeholder assets
-•	Test any developed game mechanics
-•	Refine the product backlog with user stories.
+Goal: By the end of Sprint 2, the team will:
+•	Add a sea-themed background to the game scene to enhance the pirate setting.
+•	Develop a start screen that allows players to either start a new game or view a list of high scores.
+•	Create a defeat/game-over screen that appears upon losing and includes options to restart the game or return to the start screen.
+•	Start implementing mobile controls and fixing any bugs related.
+
 Sprint 3:
-Goal: Enhancing the game experience with UI and functioning mechanics
-•	Add score, health bar, or game timer.
-•	Address any technical debt from previous sprints.
-•	Testing code functionality.
-•	Playtesting the game.
-•	Implement a database that holds a player’s score.
+Goal: By the end of Sprint 3, the team will: 
+•	Add at least three distinct enemy ship classes, each with different movement patterns.
+•	Introduce a level progression system where enemy waves increase in difficulty and a new wave begins once the current one is cleared.
+•	Display a level indicator on the game screen to track progress.
+•	Implement a lives/health system for the player and show remaining lives using visual indicators (such as ship icons or hearts).
+•	Continue improving mobile controls for player movement and firing, addressing any new issues from testing.
+
 Sprint 4:
-Goal: Polish and prepare our game for review by team
-•	Bug fixing and performance improvements
-•	Create a start screen and end screen.
-•	Prepare sprint review/demo of game.
-•	Collect user feedback (if time allows) or simulating player testing.
+•	Add a Boss Ship that appears every few levels and requires multiple hits to defeat
+•	Polish and finalize the UI (score display, level number, lives remaining, start/game over).
+•	Implement high score saving using local storage and sort/display the top scores.
+•	Proceed with some playtesting in the team, fix any gameplay bugs or balancing issues, and prepare a demo walkthrough for sprint review.
