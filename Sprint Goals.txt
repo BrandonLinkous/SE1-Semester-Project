@@ -1,0 +1,26 @@
+Sprint Goals
+Sprint 1:
+Goal: Ensure we have a shared understanding of our game concept, get a title running in a frame of a browser, and set up version control.
+•	Brainstorm and decide on game (High Priority)
+•	Set up version control and project repo (High Priority)
+•	Get the title running in a frame in a browser (Medium Priority)
+Sprint 2:
+Goal: Develop the core gameplay that defines how the player engages with the game, such as input, feedback, and challenges.
+•	Establish basic enemy or obstacle behavior
+•	Initial win/lose conditions
+•	Add any art or placeholder assets
+•	Test any developed game mechanics
+•	Refine the product backlog with user stories.
+Sprint 3:
+Goal: Enhancing the game experience with UI and functioning mechanics
+•	Add score, health bar, or game timer.
+•	Address any technical debt from previous sprints.
+•	Testing code functionality.
+•	Playtesting the game.
+•	Implement a database that holds a player’s score.
+Sprint 4:
+Goal: Polish and prepare our game for review by team
+•	Bug fixing and performance improvements
+•	Create a start screen and end screen.
+•	Prepare sprint review/demo of game.
+•	Collect user feedback (if time allows) or simulating player testing.
