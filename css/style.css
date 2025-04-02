@@ -1,0 +1,72 @@
+/* Basic layout reset */
+body {
+  margin: 0;
+  padding: 0;
+  background: black;
+  font-family: Arial, sans-serif;
+  overflow: hidden; /* No scrollbars */
+}
+
+/* Main game container */
+#gameContainer {
+  position: relative;
+  margin: 0 auto;
+  background: #111;
+  width: 600px;
+  height: 600px;
+  border: 2px solid #444;
+  overflow: hidden;
+}
+
+/*
+  The player is a ~40×40 triangle pointing downward.
+  We'll do a precise polygon collision for it vs. bullets.
+*/
+#player {
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-left: 20px solid transparent;
+  border-right: 20px solid transparent;
+  border-bottom: 40px solid lime;
+  bottom: 20px; /* keep near bottom */
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* Enemies: 30×30 squares */
+.enemy {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  background-color: red;
+}
+
+/* Player bullet */
+.bullet {
+  position: absolute;
+  width: 6px;
+  height: 10px;
+  background-color: yellow;
+}
+
+/* Enemy bullet (small rectangle) */
+.enemy-bullet {
+  position: absolute;
+  width: 6px;
+  height: 10px;
+  background-color: orange;
+}
+
+/* Scoreboard info */
+#scoreboard {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  color: #fff;
+  font-size: 18px;
+}
+
+#scoreboard span {
+  margin-right: 20px;
+}
