@@ -1,6 +1,7 @@
 Sprint Goals:
 Sprint 1:
-Goal: By the end of Sprint 1, the team will:
+Goal: Deliver a playable pirate-themed prototype with working visuals, scoring, and core collision logic.
+By the end of Sprint 1, the team will:
 •	Replace the placeholder player and enemy ship blocks with themed pirate ship sprites including player ship as bucky.
 •	Implement enemy ships’ ability to shoot cannonballs toward the player
 •	Tracking a player score by awarding points when an enemy ship is destroyed and display the score on the game screen.
