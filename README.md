@@ -1,6 +1,4 @@
-# SE1-Semester-Project
-
-BucBattle Shooter
+# BucBattle Shooter
 
 This is a browser-based shooter inspired by classic space shooters, built using HTML, CSS, and JavaScript. It features:
 
@@ -12,7 +10,7 @@ This is a browser-based shooter inspired by classic space shooters, built using 
 
     A blink-and-invulnerable mechanic whenever the player gets hit, preventing immediate consecutive hits.
 
-Table of Contents
+# Table of Contents
 
     Features
 
@@ -40,7 +38,7 @@ Features
 
     Scoring: Gain points by destroying enemies; losing all lives triggers game over.
 
-Installation and Setup
+# Installation and Setup
 
     Clone or Download this repository.
 
@@ -57,7 +55,7 @@ Installation and Setup
 
     Play! No additional build steps are required.
 
-Gameplay
+# Gameplay
 
     Your player is the green triangle at the bottom.
 
@@ -73,7 +71,7 @@ Gameplay
 
     When lives reach 0, a “Game Over” message appears.
 
-Controls
+# Controls
 Desktop
 
     Arrow Left / Right: Move the triangle (player) left or right.
@@ -120,7 +118,7 @@ File Structure
 
             Temporary invincibility (blinking mechanic) after being hit.
 
-Customization
+# Customization
 
     Dimensions: Change the width/height in both index.html (canvas size) and style.css (for #gameContainer), plus adjust any references in scripts.js (like GAME_WIDTH, GAME_HEIGHT).
 
@@ -132,7 +130,7 @@ Customization
 
     Visuals: Use different colors, images, or sprites for the player, enemies, or bullets.
 
-License
+# License
 
 This project is provided under the MIT License. You’re free to use, modify, and distribute it. See MIT License for more details.
 
