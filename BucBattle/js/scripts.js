@@ -160,7 +160,7 @@ function createEnemies() {
     for (let col = 0; col < enemyCols; col++) {
       const enemyEl = document.createElement("div");
       enemyEl.classList.add("enemy");
-
+      enemyEl.style.backgroundImage = "url('images/enemy.png')";
       const x = 50 + col * enemySpacingX;
       const y = 50 + row * enemySpacingY;
 
