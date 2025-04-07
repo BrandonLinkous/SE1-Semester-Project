@@ -2,20 +2,39 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Galaxiga</title>
+  <title>Buc Battle</title>
+  <!-- Link to external CSS -->
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
+
+  <!-- START SCREEN -->
+  <div id="startScreen">
+    <h1>Buc Battle</h1>
+    <button id="btnPlay">Play Game</button>
+    <button id="btnLeaderboards">Leaderboards</button>
+  </div>
+
+  <!-- LEADERBOARDS SCREEN -->
+  <div id="leaderboardsScreen">
+    <h2>Leaderboards</h2>
+    <!-- Placeholder content -->
+    <p>Coming soon...</p>
+    <button id="btnBack">Back</button>
+  </div>
+
+  <!-- GAME CONTAINER -->
   <div id="gameContainer">
-    <!-- Player is a downward-pointing triangle (CSS borders) -->
     <div id="player"></div>
   </div>
 
+  <!-- SCOREBOARD -->
   <div id="scoreboard">
     <span id="score">Score: 0</span>
     <span id="lives">Lives: 3</span>
   </div>
 
+  <!-- Link to external JavaScript (at bottom so DOM elements exist first) -->
   <script src="js/scripts.js"></script>
 </body>
 </html>
