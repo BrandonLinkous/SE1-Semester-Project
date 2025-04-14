@@ -3,73 +3,86 @@
  *************************************************/
 const startScreen        = document.getElementById("startScreen");
 const leaderboardsScreen = document.getElementById("leaderboardsScreen");
+const defeatScreen       = document.getElementById("defeatScreen");
+
 const btnPlay            = document.getElementById("btnPlay");
 const btnLeaderboards    = document.getElementById("btnLeaderboards");
 const btnBack            = document.getElementById("btnBack");
+
+const btnRestart           = document.getElementById("btnRestart");
+const btnMainMenu          = document.getElementById("btnMainMenu");
+const btnDefeatLeaderboards= document.getElementById("btnDefeatLeaderboards");
 
 btnPlay.addEventListener("click", onPlayGame);
 btnLeaderboards.addEventListener("click", onShowLeaderboards);
 btnBack.addEventListener("click", onBackFromLeaderboards);
 
+btnRestart.addEventListener("click", onRestartGame);
+btnMainMenu.addEventListener("click", onDefeatMainMenu);
+btnDefeatLeaderboards.addEventListener("click", onDefeatShowLeaderboards);
+
 function onPlayGame() {
-  // Hide start screen
   startScreen.style.display = "none";
-
-  // Show game container & scoreboard
   gameContainer.style.display = "block";
-  scoreboard.style.display = "block";
-
-  // Initialize the game
+  scoreboard.style.display = "flex";
   init();
 }
 
 function onShowLeaderboards() {
-  // Hide start screen
   startScreen.style.display = "none";
-  // Show leaderboards screen
   leaderboardsScreen.style.display = "flex";
 }
 
 function onBackFromLeaderboards() {
-  // Hide leaderboards
   leaderboardsScreen.style.display = "none";
-  // Show start screen again
   startScreen.style.display = "flex";
 }
 
+function onRestartGame() {
+  defeatScreen.style.display = "none";
+  gameContainer.style.display = "block";
+  scoreboard.style.display = "flex";
+  init(); // fully resets with base speed
+}
+
+function onDefeatMainMenu() {
+  defeatScreen.style.display = "none";
+  startScreen.style.display = "flex";
+}
+
+function onDefeatShowLeaderboards() {
+  defeatScreen.style.display = "none";
+  leaderboardsScreen.style.display = "flex";
+}
 
 /*************************************************
  *            GAME-WIDE VARIABLES
  *************************************************/
-const gameContainer = document.getElementById("gameContainer");
-const playerEl      = document.getElementById("player");
-const scoreEl       = document.getElementById("score");
-const livesEl       = document.getElementById("lives");
-const scoreboard    = document.getElementById("scoreboard");
+const gameContainer     = document.getElementById("gameContainer");
+const playerEl          = document.getElementById("player");
+const scoreEl           = document.getElementById("score");
+const livesEl           = document.getElementById("lives");
+const levelEl           = document.getElementById("level");
+const scoreboard        = document.getElementById("scoreboard");
+const finalScoreDisplay = document.getElementById("finalScoreDisplay");
 
 const GAME_WIDTH  = 600;
 const GAME_HEIGHT = 600;
 
-/* Player: downward triangle ~40×40 bounding box */
+let level         = 1;
 let score         = 0;
 let lives         = 3;
-let playerX       = GAME_WIDTH / 2 - 20; 
+let playerX       = GAME_WIDTH / 2 - 20;
 let playerY       = GAME_HEIGHT - 60;
 let playerSpeed   = 5;
 let isMovingLeft  = false;
 let isMovingRight = false;
 let isShooting    = false;
+let isInvulnerable= false;
 
-/* 
-   Flag indicating if the player is invulnerable 
-   (i.e., blinking after being hit).
-*/
-let isInvulnerable = false;
-
-/* Enemies & bullets arrays */
-const enemies     = [];
-const bullets     = [];
-const enemyBullets= [];
+const enemies      = [];
+const bullets      = [];
+const enemyBullets = [];
 
 /* Enemy config */
 const ENEMY_WIDTH   = 30;
@@ -78,10 +91,9 @@ const enemyRows     = 3;
 const enemyCols     = 8;
 const enemySpacingX = 40;
 const enemySpacingY = 40;
-let enemyDirection  = 1; 
+let enemyDirection  = 1;
 let enemySpeed      = 1;
 
-/* Bullet config */
 const PLAYER_BULLET_WIDTH  = 6;
 const PLAYER_BULLET_HEIGHT = 10;
 const ENEMY_BULLET_WIDTH   = 6;
@@ -89,44 +101,58 @@ const ENEMY_BULLET_HEIGHT  = 10;
 const PLAYER_BULLET_SPEED  = 7;
 const ENEMY_BULLET_SPEED   = 4;
 
+/*
+  Important: We only want to bind events once,
+  and we need to manage the requestAnimationFrame
+  so we don't end up with multiple loops.
+*/
+let eventsBound = false;
+let gameLoopId  = null;
+let lastEnemyShotTime = 0;
+
 /*************************************************
  *                INITIALIZATION
  *************************************************/
-let lastEnemyShotTime = 0;
-
 function init() {
+  // 1) Cancel any old loop so we don't stack them
+  if (gameLoopId) {
+    cancelAnimationFrame(gameLoopId);
+  }
+
+  // 2) Reset everything (enemySpeed -> 1, etc.)
   resetAllGameVars();
 
-  // Keyboard events
-  document.addEventListener("keydown", onKeyDown);
-  document.addEventListener("keyup", onKeyUp);
+  // 3) Bind events only once
+  if (!eventsBound) {
+    document.addEventListener("keydown", onKeyDown);
+    document.addEventListener("keyup", onKeyUp);
+    gameContainer.addEventListener("touchstart", onTouchStart);
+    gameContainer.addEventListener("touchend", onTouchEnd);
+    gameContainer.addEventListener("touchmove", onTouchMove);
+    eventsBound = true;
+  }
 
-  // Touch events (mobile)
-  gameContainer.addEventListener("touchstart", onTouchStart);
-  gameContainer.addEventListener("touchend", onTouchEnd);
-  gameContainer.addEventListener("touchmove", onTouchMove);
-
-  requestAnimationFrame(gameLoop);
+  // 4) Start a fresh loop
+  gameLoopId = requestAnimationFrame(gameLoop);
 }
 
 function resetAllGameVars() {
-  // Clear existing arrays
   enemies.length = 0;
   bullets.length = 0;
   enemyBullets.length = 0;
 
-  // Reset basic stats
+  level = 1;
   score = 0;
   lives = 3;
+  updateLevel();
   updateScore();
   updateLives();
 
-  // Reset player position
   playerX = GAME_WIDTH / 2 - 20;
   playerY = GAME_HEIGHT - 60;
   updatePlayerPosition();
 
-  // Clear leftover DOM .enemy, .bullet, .enemy-bullet if any
+  // Clean up leftover DOM elements
   while (gameContainer.querySelector(".enemy")) {
     gameContainer.querySelector(".enemy").remove();
   }
@@ -137,18 +163,13 @@ function resetAllGameVars() {
     gameContainer.querySelector(".enemy-bullet").remove();
   }
 
-  // Create new enemies
   createEnemies();
 
-  // Reset speeds
   enemyDirection = 1;
-  enemySpeed = 1;
-
-  // Reset invulnerability
+  enemySpeed     = 1; // base speed reset
   isInvulnerable = false;
   playerEl.style.visibility = "visible";
 
-  // Reset last shot time
   lastEnemyShotTime = performance.now();
 }
 
@@ -161,6 +182,7 @@ function createEnemies() {
       const enemyEl = document.createElement("div");
       enemyEl.classList.add("enemy");
       enemyEl.style.backgroundImage = "url('images/enemy.png')";
+
       const x = 50 + col * enemySpacingX;
       const y = 50 + row * enemySpacingY;
 
@@ -177,7 +199,7 @@ function createEnemies() {
 }
 
 /*************************************************
- *          PLAYER CONTROLS - DESKTOP
+ *          PLAYER CONTROLS - KEYBOARD
  *************************************************/
 function onKeyDown(e) {
   if (e.key === "ArrowLeft") {
@@ -203,11 +225,10 @@ function onKeyUp(e) {
 }
 
 /*************************************************
- *          PLAYER CONTROLS - MOBILE
+ *          PLAYER CONTROLS - TOUCH
  *************************************************/
 function onTouchStart(e) {
   const touchX = e.touches[0].clientX - gameContainer.offsetLeft;
-  
   if (touchX < GAME_WIDTH / 2) {
     isMovingLeft = true;
   } else {
@@ -260,14 +281,12 @@ function moveEnemies() {
 
   if (shiftDown) {
     enemies.forEach(enemy => {
-      if (enemy.alive) {
-        enemy.y += 20;
-      }
+      if (!enemy.alive) return;
+      enemy.y += 20;
     });
     enemyDirection *= -1;
   }
 
-  // Update DOM
   enemies.forEach(enemy => {
     if (!enemy.alive) return;
     enemy.el.style.left = enemy.x + "px";
@@ -283,7 +302,7 @@ function shootBullet() {
   bulletEl.classList.add("bullet");
   gameContainer.appendChild(bulletEl);
 
-  // Apex of the triangle
+  // from player's center
   const bulletX = playerX + 20 - PLAYER_BULLET_WIDTH / 2;
   const bulletY = playerY;
 
@@ -302,7 +321,7 @@ function enemyShoot(enemy) {
 }
 
 /*************************************************
- *        PLAYER BULLET UPDATES & COLLISIONS
+ *   PLAYER BULLETS & COLLISIONS
  *************************************************/
 function updatePlayerBullets() {
   for (let i = bullets.length - 1; i >= 0; i--) {
@@ -318,17 +337,15 @@ function updatePlayerBullets() {
       continue;
     }
 
-    // Check collision with enemies (basic bounding box)
+    // Collision with enemies
     for (let j = 0; j < enemies.length; j++) {
       const e = enemies[j];
       if (!e.alive) continue;
 
       if (rectsOverlap(b.x, b.y, PLAYER_BULLET_WIDTH, PLAYER_BULLET_HEIGHT,
                        e.x, e.y, ENEMY_WIDTH, ENEMY_HEIGHT)) {
-        // Destroy enemy
         e.alive = false;
         e.el.remove();
-        // Remove bullet
         b.el.remove();
         bullets.splice(i, 1);
 
@@ -341,10 +358,10 @@ function updatePlayerBullets() {
 }
 
 /*************************************************
- *          ENEMY BULLET UPDATES
+ *   ENEMY BULLETS & COLLISIONS
  *************************************************/
 function updateEnemyBullets(timestamp) {
-  // Randomly have enemies shoot about every ~1 second
+  // Random enemy firing ~1/second
   const now = performance.now();
   if (now - lastEnemyShotTime > 1000) {
     const aliveEnemies = enemies.filter(e => e.alive);
@@ -355,7 +372,6 @@ function updateEnemyBullets(timestamp) {
     lastEnemyShotTime = now;
   }
 
-  // Move existing bullets
   for (let i = enemyBullets.length - 1; i >= 0; i--) {
     const eb = enemyBullets[i];
     eb.y += ENEMY_BULLET_SPEED;
@@ -369,20 +385,18 @@ function updateEnemyBullets(timestamp) {
       continue;
     }
 
-    // If invulnerable, skip collision checks
+    // If invulnerable, skip collision
     if (!isInvulnerable) {
-      // SAT-based collision: triangle (player) vs. rectangle (bullet)
       const bulletPoly = [
         [eb.x, eb.y],
         [eb.x + ENEMY_BULLET_WIDTH, eb.y],
         [eb.x + ENEMY_BULLET_WIDTH, eb.y + ENEMY_BULLET_HEIGHT],
         [eb.x, eb.y + ENEMY_BULLET_HEIGHT]
       ];
-
       const playerTriangle = [
-        [playerX + 20, playerY],        // apex
-        [playerX + 40, playerY + 40],   // bottom-right
-        [playerX,      playerY + 40]    // bottom-left
+        [playerX + 20, playerY], 
+        [playerX + 40, playerY + 40],
+        [playerX,      playerY + 40]
       ];
 
       if (satPolygonsCollide(playerTriangle, bulletPoly)) {
@@ -395,24 +409,34 @@ function updateEnemyBullets(timestamp) {
 }
 
 /*************************************************
- *            LOSE LIFE & BLINK
+ *       LOSE LIFE & DEFEAT SCREEN
  *************************************************/
 function loseLife() {
   lives--;
   updateLives();
 
-  // Make player invulnerable during blink
+  // Temporary invulnerability
   isInvulnerable = true;
   blinkPlayerThreeTimes(() => {
-    // Once blinking ends, remove invulnerability
     isInvulnerable = false;
     playerEl.style.visibility = "visible";
   });
 
   if (lives <= 0) {
-    alert("Game Over! Press OK to restart.");
-    resetAllGameVars();
+    showDefeatScreen();
   }
+}
+
+function showDefeatScreen() {
+  // Hide game and scoreboard
+  gameContainer.style.display = "none";
+  scoreboard.style.display = "none";
+
+  // Display final score
+  finalScoreDisplay.textContent = `Score: ${score}`;
+
+  // Show defeat screen
+  defeatScreen.style.display = "flex";
 }
 
 /* Blink 3 times => toggles 6 times total */
@@ -423,7 +447,7 @@ function blinkPlayerThreeTimes(onComplete) {
       (playerEl.style.visibility === "hidden") ? "visible" : "hidden";
 
     toggles++;
-    if (toggles === 6) { // 3 full on-off cycles
+    if (toggles === 6) {
       clearInterval(blinkInterval);
       if (typeof onComplete === 'function') {
         onComplete();
@@ -433,7 +457,42 @@ function blinkPlayerThreeTimes(onComplete) {
 }
 
 /*************************************************
- *         RECTANGLE BOUNDING BOX
+ *       SCORE, LIVES, LEVEL UPDATERS
+ *************************************************/
+function updateScore() {
+  scoreEl.textContent = `Score: ${score}`;
+}
+
+function updateLives() {
+  livesEl.textContent = `Lives: ${lives}`;
+}
+
+function updateLevel() {
+  levelEl.textContent = `Level: ${level}`;
+}
+
+/*************************************************
+ *             GAME LOOP
+ *************************************************/
+function gameLoop(timestamp) {
+  updatePlayerPosition();
+  moveEnemies();
+  updatePlayerBullets();
+  updateEnemyBullets(timestamp);
+
+  // If wave cleared => next level
+  if (enemies.every(e => !e.alive)) {
+    level++;
+    updateLevel();
+    enemySpeed += 0.3; 
+    createEnemies();
+  }
+
+  gameLoopId = requestAnimationFrame(gameLoop);
+}
+
+/*************************************************
+ *       COLLISION FUNCTIONS (SAT & Helpers)
  *************************************************/
 function rectsOverlap(ax, ay, aw, ah, bx, by, bw, bh) {
   return !(
@@ -444,9 +503,6 @@ function rectsOverlap(ax, ay, aw, ah, bx, by, bw, bh) {
   );
 }
 
-/*************************************************
- *       SEPARATING AXIS THEOREM (SAT)
- *************************************************/
 function satPolygonsCollide(polyA, polyB) {
   if (!boundingBoxesOverlap(polyA, polyB)) return false;
   const axes = [...getNormals(polyA), ...getNormals(polyB)];
@@ -454,7 +510,7 @@ function satPolygonsCollide(polyA, polyB) {
     const [minA, maxA] = projectPolygon(polyA, axis);
     const [minB, maxB] = projectPolygon(polyB, axis);
     if (maxA < minB || maxB < minA) {
-      return false; // gap => no collision
+      return false; 
     }
   }
   return true;
@@ -483,7 +539,7 @@ function getNormals(polygon) {
     const p1 = polygon[i];
     const p2 = polygon[(i + 1) % polygon.length];
     const edge = [p2[0] - p1[0], p2[1] - p1[1]];
-    // perp: (dx, dy) => (dy, -dx)
+    // Perp = (dy, -dx)
     normals.push([edge[1], -edge[0]]);
   }
   return normals;
@@ -497,33 +553,4 @@ function projectPolygon(polygon, axis) {
     if (dot > max) max = dot;
   }
   return [min, max];
-}
-
-/*************************************************
- *            SCORE & LIVES
- *************************************************/
-function updateScore() {
-  scoreEl.textContent = `Score: ${score}`;
-}
-
-function updateLives() {
-  livesEl.textContent = `Lives: ${lives}`;
-}
-
-/*************************************************
- *             GAME LOOP
- *************************************************/
-function gameLoop(timestamp) {
-  updatePlayerPosition();
-  moveEnemies();
-  updatePlayerBullets();
-  updateEnemyBullets(timestamp);
-
-  // If wave is cleared
-  if (enemies.every(e => !e.alive)) {
-    enemySpeed += 0.3; // increase difficulty
-    createEnemies();
-  }
-
-  requestAnimationFrame(gameLoop);
 }
