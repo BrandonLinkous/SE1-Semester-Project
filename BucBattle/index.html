@@ -3,11 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <title>Buc Battle</title>
-  <!-- Link to external CSS -->
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
-
   <!-- START SCREEN -->
   <div id="startScreen">
     <h1>Buc Battle</h1>
@@ -23,18 +21,42 @@
     <button id="btnBack">Back</button>
   </div>
 
+  <!-- DEFEAT SCREEN -->
+  <div id="defeatScreen">
+    <h2>Defeated</h2>
+    <p id="finalScoreDisplay">Score: 0</p>
+    <div id="defeatButtonRow">
+      <button id="btnRestart">Restart</button>
+      <button id="btnMainMenu">Main Menu</button>
+    </div>
+    <button id="btnDefeatLeaderboards">Leaderboards</button>
+  </div>
+
   <!-- GAME CONTAINER -->
   <div id="gameContainer">
+    <!-- Player sprite -->
     <img id="player" src="images/player.png" alt="Player" />
   </div>
 
   <!-- SCOREBOARD -->
   <div id="scoreboard">
+
     <span id="score">Score: 0</span>
+<<<<<<< Updated upstream
     <span id="lives">Lives: 3</span>
+    <span id="level">Level: 1</span>
+=======
+
+    <span id="lives">
+      Lives:
+      <img class="heart" src="images/heart.png" alt="Heart" />
+      <img class="heart" src="images/heart.png" alt="Heart" />
+      <img class="heart" src="images/heart.png" alt="Heart" />
+    </span>
+    
+>>>>>>> Stashed changes
   </div>
 
-  <!-- Link to external JavaScript (at bottom so DOM elements exist first) -->
   <script src="js/scripts.js"></script>
 </body>
 </html>
