@@ -85,8 +85,8 @@ const bullets      = [];
 const enemyBullets = [];
 
 /* Enemy config */
-const ENEMY_WIDTH   = 30;
-const ENEMY_HEIGHT  = 30;
+const ENEMY_WIDTH   = 50;
+const ENEMY_HEIGHT  = 50;
 const enemyRows     = 3;
 const enemyCols     = 8;
 const enemySpacingX = 40;
@@ -199,6 +199,25 @@ function createEnemies() {
     }
   }
 }
+
+/*************************************************
+ *          RESET ENEMIES TO TOP
+ *************************************************/
+
+function resetEnemiesToTop() {
+  enemies.forEach(e => {
+    if (!e.alive) return;
+    e.y = 50 + Math.floor(Math.random() * enemyRows) * enemySpacingY;
+    e.x = 50 + Math.floor(Math.random() * enemyCols) * enemySpacingX;
+    e.el.style.top = e.y + 'px';
+    e.el.style.left = e.x + 'px';
+  });
+
+  divingEnemies.length = 0;
+  enemyBullets.forEach(b => b.el.remove());
+  enemyBullets.length = 0;
+}
+
 
 /*************************************************
  *          PLAYER CONTROLS - KEYBOARD
@@ -455,6 +474,36 @@ function updateEnemyBullets(timestamp) {
 }
 
 /*************************************************
+ *       ENEMY COLLISIONS
+ *************************************************/
+
+function updateEnemyCollisions() {
+  for (let i = 0; i < enemies.length; i++) {
+    const e = enemies[i];
+    if (!e.alive || isInvulnerable) continue;
+
+    const enemyPoly = [
+      [e.x, e.y],
+      [e.x + ENEMY_WIDTH, e.y],
+      [e.x + ENEMY_WIDTH, e.y + ENEMY_HEIGHT],
+      [e.x, e.y + ENEMY_HEIGHT],
+    ];
+    const playerTriangle = [
+      [playerX + 20, playerY],
+      [playerX + 40, playerY + 40],
+      [playerX,      playerY + 40],
+    ];
+
+    if (satPolygonsCollide(playerTriangle, enemyPoly)) {
+      loseLife();
+      resetEnemiesToTop();
+      break;
+    }
+  }
+}
+
+
+/*************************************************
  *       LOSE LIFE & DEFEAT SCREEN
  *************************************************/
 function loseLife() {
@@ -525,6 +574,7 @@ function gameLoop(timestamp) {
   moveEnemies();
   updatePlayerBullets();
   updateEnemyBullets(timestamp);
+  updateEnemyCollisions();
 
   // If wave cleared => next level
   if (enemies.every(e => !e.alive)) {
@@ -611,8 +661,6 @@ function projectPolygon(polygon, axis) {
   }
   return [min, max];
 }
-<<<<<<< Updated upstream
-=======
 
 /*************************************************
  *            SCORE & LIVES
@@ -650,4 +698,3 @@ function gameLoop(timestamp) {
 
   requestAnimationFrame(gameLoop);
 }
->>>>>>> Stashed changes
