@@ -412,8 +412,8 @@ function updateEnemyBullets(timestamp) {
  *       LOSE LIFE & DEFEAT SCREEN
  *************************************************/
 function loseLife() {
-  lives--;
-  updateLives();
+  lives--;  // Decrease lives count
+  updateLives();  // Update heart display to match lives
 
   // Temporary invulnerability
   isInvulnerable = true;
@@ -554,3 +554,43 @@ function projectPolygon(polygon, axis) {
   }
   return [min, max];
 }
+<<<<<<< Updated upstream
+=======
+
+/*************************************************
+ *            SCORE & LIVES
+ *************************************************/
+function updateScore() {
+  scoreEl.textContent = `Score: ${score}`;
+}
+
+function updateLives() {
+  // Select all heart image elements inside the lives container
+  const hearts = livesEl.querySelectorAll('.heart');
+
+  // Update the number of visible hearts based on lives
+  hearts.forEach((heart, index) => {
+    // If the index is greater than or equal to current lives, hide the heart
+    // Otherwise, show the heart
+    heart.classList.toggle('hidden', index >= lives);
+  });
+}
+
+/*************************************************
+ *             GAME LOOP
+ *************************************************/
+function gameLoop(timestamp) {
+  updatePlayerPosition();
+  moveEnemies();
+  updatePlayerBullets();
+  updateEnemyBullets(timestamp);
+
+  // If wave is cleared
+  if (enemies.every(e => !e.alive)) {
+    enemySpeed += 0.3; // increase difficulty
+    createEnemies();
+  }
+
+  requestAnimationFrame(gameLoop);
+}
+>>>>>>> Stashed changes

@@ -142,12 +142,28 @@
     margin-top: 10px;
     color: #fff;
     font-size: 18px;
+<<<<<<< Updated upstream
     display: none; /* shown after Play is clicked */
     justify-content: center;
     gap: 20px;
+=======
+    display: flex;
+    flex-direction: column; /* stack vertically */
+    align-items: center;
+    gap: 5px;
+>>>>>>> Stashed changes
   }
   
   #scoreboard span {
     margin-right: 20px;
+  }
+
+  .heart {
+    width: 24px;
+    height: 24px;
+    margin-right: 5px;
+  }
+  .heart.hidden {
+    visibility: hidden;
   }
   
