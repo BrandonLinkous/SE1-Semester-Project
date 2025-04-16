@@ -93,6 +93,8 @@ const enemySpacingX = 40;
 const enemySpacingY = 40;
 let enemyDirection  = 1;
 let enemySpeed      = 1;
+let maxEnemyBullets = 3; // baseline, increases with level
+let divingEnemies = [];
 
 const PLAYER_BULLET_WIDTH  = 6;
 const PLAYER_BULLET_HEIGHT = 10;
@@ -294,6 +296,50 @@ function moveEnemies() {
   });
 }
 
+// Randomly selects an enemy to dive (independent movement like Galaga)
+function maybeSendDivingEnemy() {
+  // 1% chance each frame (~60fps) and max 2 diving enemies at once
+  if (Math.random() < 0.01 && divingEnemies.length < 2) {
+
+    // Filter enemies: must be alive and not already diving
+    const eligible = enemies.filter(e => e.alive && !divingEnemies.includes(e));
+
+    // If any eligible enemies exist, randomly pick one and mark it for diving
+    if (eligible.length > 0) {
+      const e = eligible[Math.floor(Math.random() * eligible.length)];
+
+      // Start with a copy of the enemy and a sine-wave angle tracker
+      divingEnemies.push({ ...e, angle: 0 });
+    }
+  }
+}
+
+
+// Moves each diving enemy downward in a sine-wave pattern
+function updateDivingEnemies() {
+  for (let i = divingEnemies.length - 1; i >= 0; i--) {
+    const d = divingEnemies[i];
+
+    // Increment angle to drive the sine wave left-right pattern
+    d.angle += 0.1;
+
+    // Move downward, with horizontal sway
+    d.y += 2;
+    d.x += Math.sin(d.angle) * 3;
+
+    // Apply new position to the DOM element
+    d.el.style.left = d.x + "px";
+    d.el.style.top = d.y + "px";
+
+    // Remove from divingEnemies if it's off-screen
+    if (d.y > GAME_HEIGHT) {
+      divingEnemies.splice(i, 1);
+    }
+  }
+}
+
+
+
 /*************************************************
  *               SHOOTING
  *************************************************/
@@ -363,7 +409,7 @@ function updatePlayerBullets() {
 function updateEnemyBullets(timestamp) {
   // Random enemy firing ~1/second
   const now = performance.now();
-  if (now - lastEnemyShotTime > 1000) {
+  if (enemyBullets.length < maxEnemyBullets && now - lastEnemyShotTime > 1000) {
     const aliveEnemies = enemies.filter(e => e.alive);
     if (aliveEnemies.length > 0) {
       const randomEnemy = aliveEnemies[Math.floor(Math.random() * aliveEnemies.length)];
@@ -482,11 +528,22 @@ function gameLoop(timestamp) {
 
   // If wave cleared => next level
   if (enemies.every(e => !e.alive)) {
+    
+    // Increase level count & display
     level++;
     updateLevel();
-    enemySpeed += 0.3; 
+
+    // Increase difficulty
+    enemySpeed += 0.3;
+    maxEnemyBullets += 1;
     createEnemies();
   }
+
+  // These are placed *after* the wave check to ensure
+  // diving logic only runs on active enemies from the current level.
+  // This prevents any diving behavior from trying to use old or empty enemy data
+  maybeSendDivingEnemy();
+  updateDivingEnemies();
 
   gameLoopId = requestAnimationFrame(gameLoop);
 }
