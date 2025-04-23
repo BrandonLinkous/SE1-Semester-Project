@@ -348,6 +348,7 @@ function enemyShoot(e) {
   // Adjust missile limit by level
   let bulletCap = 1;
   if (level >= 2) bulletCap = 3;
+  if (level >= 3) bulletCap = 5;
   if (enemyBullets.length >= bulletCap) return;
 
 

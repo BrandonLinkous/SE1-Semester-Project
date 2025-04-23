@@ -88,19 +88,22 @@
   /* ======================
      GAME CONTAINER STYLES
      ====================== */
-  #gameContainer {
-    position: relative;
-    background: #111;
-    width: 90vw;
-    height: 90vw;
-    max-width: 600px;
-    max-height: 600px;
-    border: 2px solid #444;
-    overflow: hidden;
-    box-sizing: border-box;
-    margin-top: 20px;
-    display: none; /* hidden until Play Game is clicked */
-  }
+     #gameContainer {
+      position: relative;
+      background-image: url("../images/background.png");
+      background-size: cover;
+      background-position: center;
+      width: 90vw;
+      height: 90vw;
+      max-width: 600px;
+      max-height: 600px;
+      border: 2px solid #444;
+      overflow: hidden;
+      box-sizing: border-box;
+      margin-top: 20px;
+      display: none; /* hidden until Play Game is clicked */
+    }
+    
   
   #player {
     position: absolute;
