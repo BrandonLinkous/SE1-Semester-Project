@@ -84,6 +84,8 @@ const divingEnemies = [];
 // Kamikaze queue for level 3
 let kamikazeList        = [];
 let nextKamikazeIndex   = 0;
+let kamikazeCooldown    = false;
+let kamikazeFirstLaunch = true;
 
 /* Enemy config */
 const ENEMY_WIDTH    = 50;
@@ -525,7 +527,17 @@ function gameLoop(timestamp) {
 
   // Level 3: if no dive in progress, launch next kamikaze
   if (level===3 && divingEnemies.length===0 && nextKamikazeIndex<kamikazeList.length) {
-    launchSingleKamikaze();
+    if (kamikazeFirstLaunch) {
+      // Launch the first kamikaze immediately
+      launchSingleKamikaze();
+      kamikazeFirstLaunch = false;
+    } else if (!kamikazeCooldown) {
+      kamikazeCooldown = true;
+      setTimeout(() => {
+        launchSingleKamikaze();
+        kamikazeCooldown = false;
+      }, 3000); // Delay every subsequent launch
+    }
   }
 
   updateDivingEnemies();
