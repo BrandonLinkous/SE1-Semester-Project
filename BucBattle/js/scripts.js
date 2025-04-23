@@ -170,15 +170,16 @@ function createEnemies() {
   for (let row = 0; row < enemyRows; row++) {
     for (let col = 0; col < enemyCols; col++) {
       const eEl = document.createElement("div");
+      const type = (level === 3 && row === 0) ? "kamikaze" : "normal";
       eEl.classList.add("enemy");
-
-      const x0 = 50 + col*enemySpacingX;
-      const y0 = 50 + row*enemySpacingY;
+      if (type === "kamikaze") {
+      eEl.classList.add("kamikaze");
+      }
+      const x0 = 50 + col * enemySpacingX;
+      const y0 = 50 + row * enemySpacingY;
       eEl.style.left = x0 + "px";
       eEl.style.top  = y0 + "px";
       gameContainer.appendChild(eEl);
-
-      const type = (level===3 && row===0) ? "kamikaze" : "normal";
       const e = {
         el:        eEl,
         gridX:     x0,
@@ -255,18 +256,22 @@ function moveEnemies() {
   let shiftDown = false;
   enemies.forEach(e => {
     if (!e.alive) return;
+
     e.gridX += enemyDirection * enemySpeed;
+
     if (e.gridX < 0 || e.gridX + ENEMY_WIDTH > GAME_WIDTH) {
       shiftDown = true;
     }
   });
 
-  // 2) shift down if needed
+  // 2) shift down if needed — BUT NOT ON LEVEL 1
   if (shiftDown) {
-    enemies.forEach(e => {
-      if (!e.alive) return;
-      e.gridY += 20;
-    });
+    if (level !== 1) {
+      enemies.forEach(e => {
+        if (!e.alive) return;
+        e.gridY += 20;
+      });
+    }
     enemyDirection *= -1;
   }
 
@@ -282,6 +287,8 @@ function moveEnemies() {
     }
   });
 }
+
+
 
 /*************************************************
  *       LAUNCH & UPDATE DIVING ENEMIES
@@ -334,13 +341,21 @@ function shootBullet() {
 }
 
 function enemyShoot(e) {
-  if (e.type === "kamikaze") return; // never shoot
+  if (e.type === "kamikaze") return; 
+
+  // Adjust missile limit by level
+  let bulletCap = 1;
+  if (level >= 2) bulletCap = 3;
+  if (enemyBullets.length >= bulletCap) return;
+
+
   const bEl = document.createElement("div");
   bEl.classList.add("enemy-bullet");
   gameContainer.appendChild(bEl);
   const bx = e.x + ENEMY_WIDTH/2 - ENEMY_BULLET_WIDTH/2;
   enemyBullets.push({ el: bEl, x: bx, y: e.y + ENEMY_HEIGHT });
 }
+
 
 /*************************************************
  *   PLAYER BULLETS & COLLISIONS
