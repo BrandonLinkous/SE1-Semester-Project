@@ -521,7 +521,14 @@ function gameLoop(timestamp) {
   if (enemies.every(e=>!e.alive)) {
     level++; updateLevel();
     enemySpeed += 0.3;
-    maxEnemyBullets++;
+    // Set enemy missile capacity based on level
+    if (level >= 3) {
+      maxEnemyBullets = 5;
+    } else if (level === 2) {
+  maxEnemyBullets = 3;
+    } else {
+      maxEnemyBullets = 1;
+    }
     createEnemies();
   }
 
