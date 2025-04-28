@@ -171,3 +171,20 @@
     visibility: hidden;
   }
   
+  /* TRANSITION SCREEN */
+#transitionScreen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.7); /* Black transparent */
+  color: white;
+  font-size: 36px;
+  z-index: 1000;
+  text-align: center;
+}

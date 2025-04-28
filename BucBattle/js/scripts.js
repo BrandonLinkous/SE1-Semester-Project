@@ -55,6 +55,7 @@ function onDefeatShowLeaderboards() {
  *************************************************/
 const gameContainer      = document.getElementById("gameContainer");
 const playerEl           = document.getElementById("player");
+const transitionScreen = document.getElementById("transitionScreen");
 const scoreEl            = document.getElementById("score");
 const livesEl            = document.getElementById("lives");
 const levelEl            = document.getElementById("level");
@@ -66,6 +67,7 @@ const GAME_HEIGHT = 600;
 
 // Game state
 let level           = 1;
+let isTransitioning = false;
 let score           = 0;
 let lives           = 3;
 let playerX         = GAME_WIDTH/2 - 20;
@@ -530,15 +532,30 @@ function updateScore() { scoreEl.textContent = `Score: ${score}`; }
 function updateLives() { livesEl.textContent = `Lives: ${lives}`; }
 function updateLevel() { levelEl.textContent = `Level: ${level}`; }
 
+function showLevelTransition(nextLevel, callback) {
+  isTransitioning = true;
+  transitionScreen.textContent = `Level ${nextLevel} Starting...`;
+  transitionScreen.style.display = "flex";
+  setTimeout(() => {
+    transitionScreen.style.display = "none";
+    isTransitioning = false;
+    if (callback) callback();
+  }, 2000); // 2 seconds
+}
+
+
 /*************************************************
  *             GAME LOOP
  *************************************************/
 function gameLoop(timestamp) {
-  updatePlayerPosition();
-  moveEnemies();
-  updatePlayerBullets();
-  updateEnemyBullets(timestamp);
-  updateEnemyCollisions();
+  
+  if(!isTransitioning){
+    updatePlayerPosition();
+    moveEnemies();
+    updatePlayerBullets();
+    updateEnemyBullets(timestamp);
+    updateEnemyCollisions();
+  }
 
   // wave clear → next level
   if (enemies.every(e=>!e.alive)) {
@@ -548,15 +565,18 @@ function gameLoop(timestamp) {
     if (level >= 3) {
       maxEnemyBullets = 5;
     } else if (level === 2) {
-  maxEnemyBullets = 3;
+      maxEnemyBullets = 3;
     } else {
       maxEnemyBullets = 1;
     }
+
+    showLevelTransition(level, createEnemies);
+
     createEnemies();
   }
 
   // Level 3: if no dive in progress, launch next kamikaze
-  if (level===3 && divingEnemies.length===0 && nextKamikazeIndex<kamikazeList.length) {
+  if (!isTransitioning && level===3 && divingEnemies.length===0 && nextKamikazeIndex<kamikazeList.length) {
     if (kamikazeFirstLaunch) {
       // Launch the first kamikaze immediately
       launchSingleKamikaze();
@@ -570,7 +590,9 @@ function gameLoop(timestamp) {
     }
   }
 
-  updateDivingEnemies();
+  if (!isTransitioning) {
+    updateDivingEnemies();
+  }
 
   gameLoopId = requestAnimationFrame(gameLoop);
 }
