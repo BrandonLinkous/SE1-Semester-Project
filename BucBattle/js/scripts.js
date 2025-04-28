@@ -81,6 +81,8 @@ const bullets       = [];
 const enemyBullets  = [];
 const divingEnemies = [];
 
+
+
 // Kamikaze queue for level 3
 let kamikazeList        = [];
 let nextKamikazeIndex   = 0;
@@ -110,6 +112,7 @@ const ENEMY_BULLET_SPEED    = 4;
 let eventsBound       = false;
 let gameLoopId        = null;
 let lastEnemyShotTime = 0;
+let nextFireDelay = 600 + Math.random() * 600; // 600–1200ms at start
 
 /*************************************************
  *                INITIALIZATION
@@ -138,12 +141,21 @@ function resetAllGameVars() {
   kamikazeList         = [];
   nextKamikazeIndex    = 0;
 
-  level = 1;
+  level = 1; 
   score = 0;
   lives = 3;
   updateLevel();
   updateScore();
   updateLives();
+
+  // Set maxEnemyBullets based on the level:
+  if (level >= 3) {
+    maxEnemyBullets = 5;
+  } else if (level === 2) {
+    maxEnemyBullets = 3;
+  } else {
+    maxEnemyBullets = 1;
+  }
 
   playerX = GAME_WIDTH/2 - 20;
   playerY = GAME_HEIGHT - 60;
@@ -158,12 +170,12 @@ function resetAllGameVars() {
 
   enemyDirection   = 1;
   enemySpeed       = 1;
-  maxEnemyBullets  = 3;
   isInvulnerable   = false;
   playerEl.style.visibility = "visible";
 
   lastEnemyShotTime = performance.now();
 }
+
 
 /*************************************************
  *              CREATE ENEMIES
@@ -345,12 +357,7 @@ function shootBullet() {
 function enemyShoot(e) {
   if (e.type === "kamikaze") return; 
 
-  // Adjust missile limit by level
-  let bulletCap = 1;
-  if (level >= 2) bulletCap = 3;
-  if (level >= 3) bulletCap = 5;
-  if (enemyBullets.length >= bulletCap) return;
-
+  if (enemyBullets.length >= maxEnemyBullets) return;
 
   const bEl = document.createElement("div");
   bEl.classList.add("enemy-bullet");
@@ -358,6 +365,7 @@ function enemyShoot(e) {
   const bx = e.x + ENEMY_WIDTH/2 - ENEMY_BULLET_WIDTH/2;
   enemyBullets.push({ el: bEl, x: bx, y: e.y + ENEMY_HEIGHT });
 }
+
 
 
 /*************************************************
@@ -392,40 +400,54 @@ function updatePlayerBullets() {
  *************************************************/
 function updateEnemyBullets(timestamp) {
   const now = performance.now();
-  if (enemyBullets.length < maxEnemyBullets && now - lastEnemyShotTime > 1000) {
-    const shooters = enemies.filter(e => e.alive && e.type!=="kamikaze");
+
+  if (enemyBullets.length < maxEnemyBullets && now - lastEnemyShotTime > nextFireDelay) {
+    const shooters = enemies.filter(e => e.alive && e.type !== "kamikaze");
+
     if (shooters.length) {
-      enemyShoot(shooters[Math.floor(Math.random()*shooters.length)]);
+      const bulletsToFire = Math.min(maxEnemyBullets - enemyBullets.length, Math.floor(Math.random() * 2) + 1); 
+      for (let i = 0; i < bulletsToFire; i++) {
+        const shooter = shooters[Math.floor(Math.random() * shooters.length)];
+        enemyShoot(shooter);
+      }
     }
+
     lastEnemyShotTime = now;
+    nextFireDelay = 600 + Math.random() * 600; // new random delay after firing
   }
+
   for (let i = enemyBullets.length - 1; i >= 0; i--) {
     const eb = enemyBullets[i];
     eb.y += ENEMY_BULLET_SPEED;
     eb.el.style.left = eb.x + "px";
-    eb.el.style.top  = eb.y + "px";
+    eb.el.style.top = eb.y + "px";
     if (eb.y > GAME_HEIGHT + ENEMY_BULLET_HEIGHT) {
-      eb.el.remove(); enemyBullets.splice(i,1); continue;
+      eb.el.remove();
+      enemyBullets.splice(i, 1);
+      continue;
     }
     if (!isInvulnerable) {
       const bulletPoly = [
         [eb.x, eb.y],
-        [eb.x+ENEMY_BULLET_WIDTH, eb.y],
-        [eb.x+ENEMY_BULLET_WIDTH, eb.y+ENEMY_BULLET_HEIGHT],
-        [eb.x, eb.y+ENEMY_BULLET_HEIGHT]
+        [eb.x + ENEMY_BULLET_WIDTH, eb.y],
+        [eb.x + ENEMY_BULLET_WIDTH, eb.y + ENEMY_BULLET_HEIGHT],
+        [eb.x, eb.y + ENEMY_BULLET_HEIGHT]
       ];
       const tri = [
-        [playerX+20, playerY],
-        [playerX+40, playerY+40],
-        [playerX,    playerY+40]
+        [playerX + 20, playerY],
+        [playerX + 40, playerY + 40],
+        [playerX, playerY + 40]
       ];
       if (satPolygonsCollide(tri, bulletPoly)) {
         loseLife();
-        eb.el.remove(); enemyBullets.splice(i,1);
+        eb.el.remove();
+        enemyBullets.splice(i, 1);
       }
     }
   }
 }
+
+
 
 /*************************************************
  *       ENEMY COLLISIONS (INCLUDING Kamikaze)
