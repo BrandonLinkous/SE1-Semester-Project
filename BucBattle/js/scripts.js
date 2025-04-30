@@ -60,6 +60,12 @@ const livesEl            = document.getElementById("lives");
 const levelEl            = document.getElementById("level");
 const scoreboard         = document.getElementById("scoreboard");
 const finalScoreDisplay  = document.getElementById("finalScoreDisplay");
+const deathSound = new Audio("images/death.mp3");
+deathSound.volume = .5;
+
+
+
+
 
 const GAME_WIDTH  = 600;
 const GAME_HEIGHT = 600;
@@ -141,7 +147,7 @@ function resetAllGameVars() {
   kamikazeList         = [];
   nextKamikazeIndex    = 0;
 
-  level = 4; 
+  level = 1; 
   score = 0;
   lives = 3;
   updateLevel();
@@ -507,6 +513,9 @@ function resetEnemiesToTop() {
  *       LOSE LIFE & DEFEAT SCREEN
  *************************************************/
 function loseLife() {
+  deathSound.currentTime = 0; // rewind to start in case it overlaps
+  deathSound.play();
+
   lives--; updateLives();
   isInvulnerable = true;
   blinkPlayerThreeTimes(() => {
@@ -515,6 +524,7 @@ function loseLife() {
   });
   if (lives <= 0) showDefeatScreen();
 }
+
 
 function showDefeatScreen() {
   gameContainer.style.display = "none";
@@ -554,18 +564,23 @@ function gameLoop(timestamp) {
 
   // wave clear → next level
   if (enemies.every(e=>!e.alive)) {
-    level++; updateLevel();
-    enemySpeed += 0.3;
-    // Set enemy missile capacity based on level
-    if (level >= 3) {
+    // Set enemy missile capacity based on *current* level before incrementing
+    if (level === 4) {
+      maxEnemyBullets = 7;
+    } else if (level === 3) {
       maxEnemyBullets = 5;
     } else if (level === 2) {
-  maxEnemyBullets = 3;
+      maxEnemyBullets = 3;
     } else {
       maxEnemyBullets = 1;
     }
+  
+    level++; 
+    updateLevel();
+    enemySpeed += 0.3;
     createEnemies();
   }
+  
 
   if ((level === 3 || level === 4) && divingEnemies.length < (level === 4 ? 3 : 1) && nextKamikazeIndex < kamikazeList.length) {
     if (kamikazeFirstLaunch) {
