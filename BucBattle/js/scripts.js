@@ -143,7 +143,7 @@ function resetAllGameVars() {
   kamikazeList         = [];
   nextKamikazeIndex    = 0;
 
-  level = 1; 
+  level = 4; 
   score = 0;
   lives = 3;
   updateLevel();
@@ -186,16 +186,23 @@ function createEnemies() {
   for (let row = 0; row < enemyRows; row++) {
     for (let col = 0; col < enemyCols; col++) {
       const eEl = document.createElement("div");
-      const type = (level === 3 && row === 0) ? "kamikaze" : "normal";
+
+      let type = "normal";
+      if ((level === 3 && row === 0) || (level === 4 && (row === 0 || row === 1))) {
+        type = "kamikaze";
+      }
+
       eEl.classList.add("enemy");
       if (type === "kamikaze") {
-      eEl.classList.add("kamikaze");
+        eEl.classList.add("kamikaze");
       }
+
       const x0 = 50 + col * enemySpacingX;
       const y0 = 50 + row * enemySpacingY;
       eEl.style.left = x0 + "px";
       eEl.style.top  = y0 + "px";
       gameContainer.appendChild(eEl);
+
       const e = {
         el:        eEl,
         gridX:     x0,
@@ -212,12 +219,13 @@ function createEnemies() {
     }
   }
 
-  // Build kamikaze queue on Level 3
-  if (level===3) {
-    kamikazeList      = enemies.filter(e => e.type==="kamikaze");
+  // Build kamikaze queue
+  if (level >= 3) {
+    kamikazeList      = enemies.filter(e => e.type === "kamikaze");
     nextKamikazeIndex = 0;
   }
 }
+
 
 /*************************************************
  *          PLAYER CONTROLS (KEY & TOUCH)
@@ -325,8 +333,12 @@ function updateDivingEnemies() {
   for (let i = divingEnemies.length - 1; i >= 0; i--) {
     const d = divingEnemies[i];
     d.angle += 0.1;
-    d.y     += 2;
-    d.x     += Math.sin(d.angle) * 3;
+    const kamikazeSpeedY = (level >= 4) ? 4 : 2; // Faster dive on Level 4
+    const kamikazeSpeedX = (level >= 4) ? 5 : 3; // More aggressive curve
+
+    d.y += kamikazeSpeedY;
+    d.x += Math.sin(d.angle) * kamikazeSpeedX;
+
 
     // update display and collision coords
     d.enemy.el.style.left = d.x + "px";
@@ -575,20 +587,30 @@ function gameLoop(timestamp) {
     createEnemies();
   }
 
-  // Level 3: if no dive in progress, launch next kamikaze
-  if (!isTransitioning && level===3 && divingEnemies.length===0 && nextKamikazeIndex<kamikazeList.length) {
+  // Level 3 & 4 (when not trasitioning between levels): if no dive in progress, launch next kamikaze
+  if (!isTransitioning && (level === 3 || level === 4) && divingEnemies.length < (level === 4 ? 3 : 1) && nextKamikazeIndex < kamikazeList.length) {
     if (kamikazeFirstLaunch) {
-      // Launch the first kamikaze immediately
-      launchSingleKamikaze();
+      const launches = (level === 4) ? (Math.floor(Math.random() * 2) + 1) : 1; 
+      // Level 4: 1-2 kamikazes, Level 3: always 1
+      for (let i = 0; i < launches; i++) {
+        launchSingleKamikaze();
+      }
       kamikazeFirstLaunch = false;
     } else if (!kamikazeCooldown) {
       kamikazeCooldown = true;
       setTimeout(() => {
-        launchSingleKamikaze();
+        const launches = (level === 4) ? (Math.floor(Math.random() * 3) + 1) : 1; 
+        // Level 4: 1-3 kamikazes, Level 3: always 1
+        for (let i = 0; i < launches && divingEnemies.length < (level === 4 ? 3 : 1) && nextKamikazeIndex < kamikazeList.length; i++) {
+          launchSingleKamikaze();
+        }
         kamikazeCooldown = false;
-      }, 3000); // Delay every subsequent launch
+      }, (level === 4) ? (1200 + Math.random() * 600) : (2500 + Math.random() * 1000));
+      // Level 4: 1200–1800ms delay
+      // Level 3: 2500–3500ms delay
     }
-  }
+}
+
 
   if (!isTransitioning) {
     updateDivingEnemies();
